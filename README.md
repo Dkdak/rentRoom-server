@@ -9,6 +9,3 @@ git branch -M main
 git remote add origin https://github.com/Dkdak/rentRoom-server.git
 git push -u origin main
 ```
-
-
-## test commit
