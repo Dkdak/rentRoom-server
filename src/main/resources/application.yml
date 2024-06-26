@@ -1,0 +1,25 @@
+server:
+  port: 9192
+
+spring:
+  application:
+    name: slee-rentHome
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: pgadmin
+    driverClassName: org.postgresql.Driver
+    hikari:
+      auto-commit: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+      database: POSTGRESQL
+    show-sql: true
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
