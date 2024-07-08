@@ -1,25 +1,27 @@
 package com.mteam.sleerenthome.service;
 
+import com.mteam.sleerenthome.exception.InternalServerException;
 import com.mteam.sleerenthome.exception.ResourceNotFoundException;
 import com.mteam.sleerenthome.model.Room;
 import com.mteam.sleerenthome.repository.RoomRepository;
+import com.mteam.sleerenthome.utils.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.rowset.serial.SerialBlob;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.SQLException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
+
+import com.mteam.sleerenthome.model.BookedRoom;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,8 @@ public class RoomService implements IRoomService{
         room.setRoomType(roomType);
         room.setRoomPrice(roomPrice);
         if(!file.isEmpty()) {
-            byte[] photoBytes = file.getBytes();
+
+            byte[] photoBytes = ImageUtils.convertToJpgAndResize(file.getInputStream(), 400, 400);
             Blob photoBlob = new SerialBlob(photoBytes);
             room.setPhoto(photoBlob);
         }
@@ -43,38 +46,55 @@ public class RoomService implements IRoomService{
         return roomRepository.save(room);
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public List<String> getAllRoomTypes() {
         return roomRepository.findDistinctRoomTypes();
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public List<Room> getAllRooms() {
-        List<Room> rooms = roomRepository.findAll();
-        rooms.forEach(room -> {
-            // Ensure photoBase64 is populated if photo is not null
-            if (room.getPhoto() != null) {
-                room.setPhotoBase64(convertBlobToBase64(room.getPhoto()));
-            }
-        });
-        return rooms;
-
+        return roomRepository.findAll();
     }
 
+
     @Override
-    public byte[] getRoomPhotoByRoomId(Long roomId) throws SQLException {
-        Optional<Room> theRoom = roomRepository.findById(roomId);
-        if(theRoom.isEmpty()) {
-            throw new ResourceNotFoundException("sorry, room not found");
-        }
-        Blob photoBlob = theRoom.get().getPhoto();
+    @Transactional(readOnly = true)
+    public List<Room> findAllWithBookings() {
+        return roomRepository.findAllWithBookings();
+    }
+
+
+    @Override
+    public Optional<byte[]> getRoomPhotoByRoomId(Long roomId) {
+        return roomRepository.findById(roomId)
+                .map(room -> Optional.ofNullable(room.getPhoto()))
+                .orElseThrow(() -> new ResourceNotFoundException("sorry, room not found"))
+                .flatMap(this::convertBlobToByteArray);
+    }
+
+
+    @Override
+    public Optional<byte[]> getRoomPhotoBypotoBlob(Blob photoBlob) {
+        return convertBlobToByteArray(photoBlob);
+    }
+
+
+    private Optional<byte[]> convertBlobToByteArray(Blob photoBlob) {
 
         if (photoBlob == null) {
-            return null;
+            return Optional.empty();
         }
 
+        /*
+        try-with-resources 문법
+        - InputStream과 ByteArrayOutputStream을 자동으로 관리하고,
+        - 블록이 끝날 때 이 리소스들을 자동으로 닫아줍니다.
+         이는 자원을 명시적으로 닫아야 하는 번거로움을 덜어주고, 코드의 안전성을 높여줍니다.
+        */
         try (InputStream inputStream = photoBlob.getBinaryStream();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
@@ -84,37 +104,49 @@ public class RoomService implements IRoomService{
                 outputStream.write(buffer, 0, bytesRead);
             }
 
-            return outputStream.toByteArray();
+            return Optional.of(outputStream.toByteArray());
         } catch (SQLException | IOException e) {
             throw new RuntimeException("Failed to convert Blob to byte[]", e);
         }
-
-
-//        if(photoBlob != null) {
-//
-//            try {
-//                long blobLength = photoBlob.length();
-//                if (blobLength > Integer.MAX_VALUE) {
-//                    throw new RuntimeException("Blob size is too large to process.");
-//                }
-//                return photoBlob.getBytes(1, (int) blobLength);
-//            } catch (SQLException e) {
-//                throw new RuntimeException("Failed to convert Blob to byte[]", e);
-//            }
-//
-//        }
-
     }
 
 
-    private String convertBlobToBase64(Blob blob) {
-        try {
-            byte[] bytes = blob.getBytes(1, (int) blob.length());
-            return Base64.getEncoder().encodeToString(bytes);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
+    @Transactional(readOnly = true)
+    public Optional<Room> findRoomById(Long roomId) {
+        return roomRepository.findById(roomId);
+    }
+
+    @Override
+    public void deleteRoom(Long roomId) {
+        Optional<Room> theRoom = roomRepository.findById(roomId);
+        if(theRoom.isPresent()) {
+            roomRepository.deleteById(roomId);
         }
     }
-    
+
+    @Override
+    public Room updateRoom(Long roomId, String roomType, BigDecimal roomPrice, byte[] photoBytes) {
+
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found for this id :: " + roomId));
+        if(roomType != null) room.setRoomType(roomType);
+        if(roomPrice != null) room.setRoomPrice(roomPrice);
+        if(photoBytes != null && photoBytes.length > 0) {
+            try {
+                photoBytes = ImageUtils.convertToJpgAndResize(new ByteArrayInputStream(photoBytes), 400, 400);
+                room.setPhoto(new SerialBlob(photoBytes));
+            } catch (SQLException | IOException e) {
+                throw new InternalServerException("Error update room");
+            }
+        }
+
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Optional<Room> getRoomById(Long roomId) {
+        return Optional.of(roomRepository.findById(roomId).get());
+    }
+
+
 }
