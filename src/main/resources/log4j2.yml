@@ -1,0 +1,15 @@
+Configuration:
+  status: warn
+  
+  Appenders:
+    Console:
+      name: ConsoleAppender
+      target: SYSTEM_OUT
+      PatternLayout:
+        Pattern: "%d [%t] %-5p %c - %m%n"
+  
+  Loggers:
+    Root:
+      level: debug
+      AppenderRef:
+        - ref: ConsoleAppender

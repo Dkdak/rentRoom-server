@@ -1,18 +1,15 @@
 package com.mteam.sleerenthome.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.RandomStringUtils;
 
 @Entity
 @Getter
@@ -24,18 +21,19 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "room_type")
     private String roomType;
+
+    @Column(name = "room_price")
     private BigDecimal roomPrice;
+
+    @Column(name = "is_booked")
     private boolean isBooked = false;
 
     @Lob
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // JSON 직렬화에서 무시할 필드
+    @Column(name = "photo")
+//    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // JSON 직렬화에서 무시할 필드
     private Blob photo;
-
-
-    @Transient
-    @JsonProperty("photo") // JSON 필드 이름 지정
-    private String photoBase64;
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<BookedRoom> bookings;
