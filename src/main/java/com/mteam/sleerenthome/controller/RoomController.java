@@ -6,7 +6,7 @@ import com.mteam.sleerenthome.model.BookedRoom;
 import com.mteam.sleerenthome.model.Room;
 import com.mteam.sleerenthome.respnse.BookingResponse;
 import com.mteam.sleerenthome.respnse.RoomResponse;
-import com.mteam.sleerenthome.service.BookingService;
+import com.mteam.sleerenthome.service.IBookingService;
 import com.mteam.sleerenthome.service.IRoomService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +37,7 @@ public class RoomController {
 
 
     private final IRoomService roomService;
-    private final BookingService bookingService;
+    private final IBookingService bookingService;
 
 
     @PostMapping("/add/new-room")
@@ -105,7 +105,7 @@ public class RoomController {
      * JPA는 캐시를 사용하는 것으로 DB를 직접 일지 않음으로 속도에는 차이가 없다.
      */
     @GetMapping("/orgin/all-rooms")
-    public ResponseEntity<List<RoomResponse>> _getAllRooms() throws SQLException {
+    public ResponseEntity<List<RoomResponse>> _getAllRooms() {
         List<Room> rooms = roomService.getAllRooms();
         List<RoomResponse> roomResponses = rooms.stream()
                 .map(this::_getRoomResponse)

@@ -8,8 +8,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-import com.mteam.sleerenthome.model.Room;
-
 @Entity
 @Getter
 @Setter
@@ -31,13 +29,13 @@ public class BookedRoom {
     private String guestFullName;
 
     @Column(name = "guest_email")
-    private String guestEmailAddress;
+    private String guestEmail;
 
     @Column(name = "adults")
-    private int NumOfAdults;
+    private int numOfAdults;
 
     @Column(name = "cheldren")
-    private int NumOfCheldren;
+    private int numOfChildren;
 
     @Column(name = "total_guest")
     private int totalNumOfGuest;
@@ -50,16 +48,16 @@ public class BookedRoom {
     private Room room;
 
     public void calulateTotalNumberOfGuest() {
-        this.totalNumOfGuest = this.NumOfAdults + this.NumOfCheldren;
+        this.totalNumOfGuest = this.numOfAdults + this.numOfChildren;
     }
 
     public void setNumOfAdults(int numOfAdults) {
-        NumOfAdults = numOfAdults;
+        this.numOfAdults = numOfAdults;
         calulateTotalNumberOfGuest();
     }
 
-    public void setNumOfCheldren(int numOfCheldren) {
-        NumOfCheldren = numOfCheldren;
+    public void setNumOfChildren(int numOfChildren) {
+        this.numOfChildren = numOfChildren;
         calulateTotalNumberOfGuest();
     }
 

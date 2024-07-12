@@ -21,8 +21,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import com.mteam.sleerenthome.model.BookedRoom;
-
 @Service
 @RequiredArgsConstructor
 public class RoomService implements IRoomService{
@@ -145,7 +143,7 @@ public class RoomService implements IRoomService{
 
     @Override
     public Optional<Room> getRoomById(Long roomId) {
-        return Optional.of(roomRepository.findById(roomId).get());
+        return roomRepository.findById(roomId);
     }
 
 
