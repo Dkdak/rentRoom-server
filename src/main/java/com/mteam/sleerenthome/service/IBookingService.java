@@ -3,6 +3,7 @@ package com.mteam.sleerenthome.service;
 import com.mteam.sleerenthome.model.BookedRoom;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IBookingService {
     void cancelBooking(Long bookingId);

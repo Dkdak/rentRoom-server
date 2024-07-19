@@ -4,8 +4,8 @@ import com.mteam.sleerenthome.exception.InvalidBookingRequestException;
 import com.mteam.sleerenthome.exception.ResourceNotFoundException;
 import com.mteam.sleerenthome.model.BookedRoom;
 import com.mteam.sleerenthome.model.Room;
-import com.mteam.sleerenthome.respnse.BookingResponse;
-import com.mteam.sleerenthome.respnse.RoomResponse;
+import com.mteam.sleerenthome.response.BookingResponse;
+import com.mteam.sleerenthome.response.RoomResponse;
 import com.mteam.sleerenthome.service.IBookingService;
 import com.mteam.sleerenthome.service.IRoomService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin("http://localhost:5173")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/bookings")
@@ -50,6 +49,7 @@ public class BookingController {
             return ResponseEntity.ok(bookingResponse);
 
         } catch (ResourceNotFoundException e) {
+            logger.info("confirmation error...{}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
@@ -68,7 +68,7 @@ public class BookingController {
     }
 
 
-    @DeleteMapping("/booking/{bookindId}/delete")
+    @DeleteMapping("/booking/{bookingId}/delete")
     public void cancelBooking(@PathVariable Long bookingId) {
         bookingService.cancelBooking(bookingId);
     }

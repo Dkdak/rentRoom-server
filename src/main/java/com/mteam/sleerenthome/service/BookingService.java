@@ -1,14 +1,15 @@
 package com.mteam.sleerenthome.service;
 
 import com.mteam.sleerenthome.exception.InvalidBookingRequestException;
+import com.mteam.sleerenthome.exception.ResourceNotFoundException;
 import com.mteam.sleerenthome.model.BookedRoom;
-import com.mteam.sleerenthome.model.Room;
 import com.mteam.sleerenthome.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,15 +41,25 @@ public class BookingService implements IBookingService{
         if(bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())) {
             throw new InvalidBookingRequestException("check-in date must come before check-out date");
         }
-        Room room = roomService.getRoomById(roomId).get();
-        List<BookedRoom> existingBookings = room.getBookings();
-        boolean roomIsAvailable = roomIsAvailable(bookingRequest, existingBookings);
-        if(roomIsAvailable) {
-            room.addBooking(bookingRequest);
-            bookingRepository.save(bookingRequest);
-        } else {
-            throw new InvalidBookingRequestException("Sorry, this room is not available for the selected dates");
-        }
+
+        roomService.getRoomById(roomId).ifPresentOrElse(
+                room -> {
+                    // do something with room
+                    List<BookedRoom> existingBookings = room.getBookings();
+                    boolean roomIsAvailable = roomIsAvailable(bookingRequest, existingBookings);
+                    if(roomIsAvailable) {
+                        room.addBooking(bookingRequest);
+                        bookingRepository.save(bookingRequest);
+                    } else {
+                        throw new InvalidBookingRequestException("Sorry, this room is not available for the selected dates");
+                    }
+                },
+                () -> {
+                    // handle the case where room is not found
+                    throw new ResourceNotFoundException("Room not found");
+                }
+        );
+
         return bookingRequest.getBookingConfirmationCode();
     }
 
@@ -56,7 +67,8 @@ public class BookingService implements IBookingService{
 
     @Override
     public BookedRoom findByBookingConfirmationCode(String confirmationCode) {
-        return bookingRepository.findByBookingConfirmationCode(confirmationCode);
+        return bookingRepository.findByBookingConfirmationCode(confirmationCode)
+                .orElseThrow(()->new ResourceNotFoundException("No Booking found with booking code: " + confirmationCode));
     }
 
 

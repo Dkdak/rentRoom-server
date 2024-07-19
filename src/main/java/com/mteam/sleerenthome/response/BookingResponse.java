@@ -1,7 +1,5 @@
-package com.mteam.sleerenthome.respnse;
+package com.mteam.sleerenthome.response;
 
-import com.mteam.sleerenthome.model.Room;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +24,7 @@ public class BookingResponse {
 
     private int numOfAdults;
 
-    private int numOfCheldren;
+    private int numOfChildren;
 
     private int totalNumOfGuest;
 
