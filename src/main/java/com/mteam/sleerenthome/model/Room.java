@@ -32,7 +32,6 @@ public class Room {
 
     @Lob
     @Column(name = "photo")
-//    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // JSON 직렬화에서 무시할 필드
     private Blob photo;
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

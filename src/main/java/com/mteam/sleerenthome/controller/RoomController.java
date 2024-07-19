@@ -4,15 +4,18 @@ import com.mteam.sleerenthome.exception.PhotoRetrievalException;
 import com.mteam.sleerenthome.exception.ResourceNotFoundException;
 import com.mteam.sleerenthome.model.BookedRoom;
 import com.mteam.sleerenthome.model.Room;
-import com.mteam.sleerenthome.respnse.BookingResponse;
-import com.mteam.sleerenthome.respnse.RoomResponse;
+import com.mteam.sleerenthome.response.BookingResponse;
+import com.mteam.sleerenthome.response.RoomResponse;
 import com.mteam.sleerenthome.service.IBookingService;
 import com.mteam.sleerenthome.service.IRoomService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +24,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,19 +33,18 @@ import java.util.stream.Collectors;
 
 
 @RestController
-@CrossOrigin("http://localhost:5173")
 @RequiredArgsConstructor
 @RequestMapping("/rooms")
 public class RoomController {
 
     private static final Logger logger = LogManager.getLogger(RoomController.class);
 
-
     private final IRoomService roomService;
     private final IBookingService bookingService;
 
 
     @PostMapping("/add/new-room")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<RoomResponse> addNewRoom(
             @RequestParam("photo") MultipartFile photo,
             @RequestParam("roomType") String roomType,
@@ -177,18 +181,16 @@ public class RoomController {
     }
 
 
-
     @DeleteMapping("/delete/room/{roomId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteRoom(@PathVariable("roomId") Long roomId) {
-
         roomService.deleteRoom(roomId);
-
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 
-
     @PutMapping("/update/{roomId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<RoomResponse> updateRoom(@PathVariable Long roomId,
                                                    @RequestParam(required = false) String roomType,
                                                    @RequestParam(required = false) BigDecimal roomPrice,
@@ -213,6 +215,37 @@ public class RoomController {
             RoomResponse roomResponse = _getRoomResponse(room);
             return ResponseEntity.ok(Optional.of(roomResponse));
         }).orElseThrow(()-> new ResourceNotFoundException("room not found"));
+
+    }
+
+
+    @GetMapping("/available-rooms")
+    public ResponseEntity<List<RoomResponse>> getAvailableRooms(
+            @RequestParam("checkInDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
+            @RequestParam("checkOutDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOutDate,
+            @RequestParam("roomType") String roomType
+            ) {
+
+        logger.info("getAvailableRooms...{},{},{}", checkInDate, checkOutDate, roomType);
+        List<Room> availableRooms = roomService.getAvailableRooms(checkInDate, checkOutDate, roomType);
+        List<RoomResponse> roomResponses = new ArrayList<>();
+
+        for(Room room : availableRooms) {
+            byte[] photoBytes = roomService.getRoomPhotoByRoomId(room.getId())
+                    .orElseThrow(() -> new PhotoRetrievalException("Error retrieving photo: " + room.getId()));
+//            byte[] photoBytes = roomService.getRoomPhotoByRoomId(room.getId());
+            if(photoBytes != null && photoBytes.length > 0) {
+                String photoBase64 = Base64.encodeBase64String(photoBytes);
+                RoomResponse roomResponse = _getRoomResponse(room);
+                roomResponse.setPhoto(photoBase64);
+                roomResponses.add(roomResponse);
+            }
+        }
+        if(roomResponses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(roomResponses);
+        }
 
     }
 }

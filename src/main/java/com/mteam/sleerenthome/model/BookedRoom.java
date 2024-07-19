@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "booked_room")
 public class BookedRoom {
 
     @Id
@@ -34,7 +35,7 @@ public class BookedRoom {
     @Column(name = "adults")
     private int numOfAdults;
 
-    @Column(name = "cheldren")
+    @Column(name = "children")
     private int numOfChildren;
 
     @Column(name = "total_guest")
@@ -61,7 +62,7 @@ public class BookedRoom {
         calulateTotalNumberOfGuest();
     }
 
-    public void setBookingConfirmationCode(String bookingConfirmationCode) {
-        this.bookingConfirmationCode = bookingConfirmationCode;
-    }
+//    public void setBookingConfirmationCode(String bookingConfirmationCode) {
+//        this.bookingConfirmationCode = bookingConfirmationCode;
+//    }
 }
