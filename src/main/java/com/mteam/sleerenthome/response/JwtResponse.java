@@ -10,17 +10,17 @@ import java.util.List;
 @AllArgsConstructor
 public class JwtResponse {
 
-    private Long id;
+    private Long userId;
     private String email;
     private String token;
     private String type = "Bearer";
     private List<String> roles;
 
-    public JwtResponse(Long id, String email, String token, List<String> roles ) {
+    public JwtResponse(Long userId, String email, String token, List<String> roles ) {
         this.roles = roles;
         this.token = token;
         this.email = email;
-        this.id = id;
+        this.userId = userId;
     }
 
 }
