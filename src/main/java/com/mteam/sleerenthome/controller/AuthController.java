@@ -48,11 +48,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        logger.info("authenticateUser...{}, {}", loginRequest.getEmail(), loginRequest.getPassword());
+        // 사용자 인증
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        // JWT 토큰 생성
         String jwt = jwtUtils.generateJwtTokenForUser(authentication);
+        // 사용자 세부 정보 가져오기
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        // 역할 가져오기
         List<String> roles = userDetails.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
@@ -64,6 +69,7 @@ public class AuthController {
                 roles));
 
     }
+
 
     @GetMapping("/generator-key")
     public ResponseEntity<?> generatorJwtSecretKey() {
