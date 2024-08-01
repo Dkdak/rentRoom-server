@@ -39,6 +39,20 @@ git clone https://github.com/yourusername/your-repo.git .
 ```
 <br>
 
+3) spring boot 프로젝트에서 환경 변수를 참조
+application.yml 또는 application.properties 파일에서 환경 변수를 사용하려면, 해당 파일에서 환경 변수를 참조하는 형식으로 설정할 수 있습니다.
+```yaml
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driverClassName: org.postgresql.Driver
+    hikari:
+      auto-commit: false
+```
+- 여기서 ${} 구문은 Spring Boot에서 환경 변수를 참조하는 방법입니다.
+
 # 2. docker spring boot에서 로컬 postgresql db 에 접속
 docker 위에 spring boot 를 올리고, 로컬에 설치되어 있는 postgresql db 에 접속합니다. 
 
@@ -68,23 +82,7 @@ networks:
 - host.docker.internal을 사용하여 Docker 컨테이너에서 호스트 머신의 데이터베이스에 접근할 수 있습니다. host.docker.internal은 Docker가 컨테이너에서 호스트 시스템에 접근하기 위해 제공하는 도메인입니다. 이 도메인을 사용하면 컨테이너가 호스트의 localhost에 접근할 수 있습니다.
 
 
-
-### 2.2. Spring Boot 애플리케이션 설정
-application.yml 또는 application.properties 파일에서 환경 변수를 사용하려면, 해당 파일에서 환경 변수를 참조하는 형식으로 설정할 수 있습니다.
-```yaml
-spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driverClassName: org.postgresql.Driver
-    hikari:
-      auto-commit: false
-```
-- 여기서 ${} 구문은 Spring Boot에서 환경 변수를 참조하는 방법입니다.
-
-
-### 2.3. Dockerfile 설정
+### 2.2. Dockerfile 설정
 1. build의 bootJar를 실행하여 jar파일 생성합니다. (gradle/tasks/build/bootJar 실행)
 2. Dockerfile에서 실제 JAR 파일 경로를 참조하도록 설정합니다. 
 ```Dockerfile
@@ -95,7 +93,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
 
-### 2.4. docker build up
+### 2.3. docker build up
 ```bash
 docker-compose down
 docker-compose up --build
@@ -249,7 +247,9 @@ FROM postgres:latest
 ```
 
 ### 4.4. docker-compose 설정
-docker-compose.yml 파일을 다음과 같이 작성합니다.
+1) postgres port:5432는 이미 로컬에 설치되어 있다면, 호스트와 컨테이너 포트 매핑 합니다. 
+2) backend에서 postgre접속시에 컨테이너 내부에서 PostgreSQL에 접근하는 것임으로 postgres:5432로 설정합니다. 
+3) docker-compose.yml 파일을 다음과 같이 작성합니다.
 ```yaml
 version: '3'
 services:
@@ -263,7 +263,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pgadmin
     ports:
-      - "5434:5432"
+      - "5434:5432"  #호스트와 컨테이너 포트 매핑
     networks:
       - my_network
     volumes:
@@ -278,7 +278,7 @@ services:
     ports:
       - "9192:9192"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres  # 컨테이너 내부에서 PostgreSQL에 접근
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=pgadmin
     depends_on:
