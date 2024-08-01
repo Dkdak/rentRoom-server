@@ -53,6 +53,8 @@ spring:
 ```
 - 여기서 ${} 구문은 Spring Boot에서 환경 변수를 참조하는 방법입니다.
 
+<br>
+
 # 2. docker spring boot에서 로컬 postgresql db 에 접속
 docker 위에 spring boot 를 올리고, 로컬에 설치되어 있는 postgresql db 에 접속합니다. 
 
