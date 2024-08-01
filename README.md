@@ -13,20 +13,10 @@ git push -u origin main
 
 # 로컬 개발 환경 설정
 이 문서에서는 Docker와 Docker Compose를 사용하여 Gradle Spring Boot 프로젝트와 PostgreSQL을 로컬 환경에서 설정하는 방법을 설명합니다.
+## 기본설정
 
-
-# 1. docker spring boot에서 로컬 postgresql db 에 접속
-docker 위에 spring boot 를 올리고, 로컬에 설치되어 있는 postgresql db 에 접속합니다. 
-
-
-
-## 1.1. 프로젝트 클론
-```bash
-cd C:/my-project/backend
-git clone https://github.com/yourusername/your-repo.git .
-```
-
-프로젝트 구조는 다음과 같습니다:
+### 1. 프로젝트 구조
+프로젝트 기본 구조를 아래와 같습니다. 
 ```css
 my-project
 ├── backend
@@ -41,6 +31,21 @@ my-project
 │   └── src
 └── docker-compose.yml
 ```
+
+### 2. 프로젝트 클론
+```bash
+cd C:/my-project/backend
+git clone https://github.com/yourusername/your-repo.git .
+```
+
+
+# 1. docker spring boot에서 로컬 postgresql db 에 접속
+docker 위에 spring boot 를 올리고, 로컬에 설치되어 있는 postgresql db 에 접속합니다. 
+
+
+
+
+
 
 
 ## 1.2. docker-compose 설정
