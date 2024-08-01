@@ -40,7 +40,7 @@ git clone https://github.com/yourusername/your-repo.git .
 <br>
 
 3) spring boot 프로젝트에서 환경 변수를 참조
-application.yml 또는 application.properties 파일에서 환경 변수를 사용하려면, 해당 파일에서 환경 변수를 참조하는 형식으로 설정할 수 있습니다.
+- application.yml 또는 application.properties 파일에서 환경 변수를 사용하려면, 해당 파일에서 환경 변수를 참조하는 형식으로 설정할 수 있습니다.
 ```yaml
 spring:
   datasource:
