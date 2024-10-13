@@ -73,6 +73,11 @@
             $('#dataTable tbody').html(rowsHtml);
         });
 
+        // CLOB2에서 HTML 데이터 불러옴
+        $.get(`/api/clob2/${id}`, function (clob2Html) {
+            $('#clob2Html').html(clob2Html);
+        });
+
         // 새 행 추가
         $('#addRowBtn').click(function () {
             const headers = $('#columnIdHeader th');
@@ -102,10 +107,11 @@
             $.ajax({
                 url: `/api/save/${id}`,
                 type: 'POST',
-                data: JSON.stringify({ dataJson: JSON.stringify(updatedData), html: htmlContent }),
+                data: JSON.stringify({ data: updatedData, html: htmlContent }),
                 contentType: 'application/json',
                 success: function () {
                     alert('Data and HTML saved successfully');
+                    // CLOB2에서 HTML 데이터 다시 불러오기
                     $.get(`/api/clob2/${id}`, function (clob2Html) {
                         $('#clob2Html').html(clob2Html);
                     });
