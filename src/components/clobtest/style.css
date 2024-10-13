@@ -1,0 +1,10 @@
+.bold-header {
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+#clob2Content {
+    margin-top: 20px;
+    border: 1px solid #000;
+    padding: 10px;
+}
