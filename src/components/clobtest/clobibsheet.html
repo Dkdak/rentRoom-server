@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBSheet Example with Links</title>
+    <script src="https://cdn.ibleaders.com/ibsheet/v8/ibsheet.js"></script>
+</head>
+<body>
+
+<div id="sheetArea" style="width:100%; height:400px;"></div>
+
+<script>
+    // 서버에서 데이터를 가져오는 함수 (비동기)
+    async function fetchData() {
+        const response = await fetch('/data');
+        return response.json();
+    }
+
+    fetchData().then(data => {
+        const { sheetHeaders, sheetHeaderId, links, data: sheetData } = data;
+
+        // 두 개의 정보를 활용한 동적 컬럼 생성
+        const dynamicColumns = sheetHeaders.map((header, index) => {
+            const headerId = sheetHeaderId[index];  // sheetHeaderId와 매핑
+            const link = links[index];  // 링크를 가져옴
+
+            return {
+                Header: `<a href="${link}" target="_blank">${header} (${headerId})</a>`,  // 링크와 헤더 텍스트 결합
+                Type: "Text",
+                Name: headerId,  // Name은 sheetData의 키와 동일
+                Width: 150,
+                Tooltip: headerId  // Tooltip에 sheetHeaderId 표시 가능
+            };
+        });
+
+        // IBSheet 초기화
+        const sheet = IBSheetLoader.createSheet({
+            id: "sheetArea",
+            options: {
+                Cfg: { SearchMode: 0, Paging: false },
+                HeaderMode: { Sort: 1, ColMove: 1, ColResize: 1 },
+                Cols: dynamicColumns  // 동적으로 생성된 컬럼 정보 적용
+            }
+        });
+
+        // JSON 데이터를 IBSheet에 적용
+        sheet.loadSearchData({ Data: sheetData });
+    });
+</script>
+
+</body>
+</html>
